@@ -58,30 +58,11 @@ CHECK_INTERVAL   = int(os.getenv("CHECK_INTERVAL", "300"))  # secondes (300 = 5 
 
 STORES = [
     {
-        "name": "Boulanger",
-        "url": "https://www.boulanger.com/ref/1216685",
-        "in_stock":     ["ajouter au panier", "en stock"],
-        "out_of_stock": ["rupture de stock", "momentanément indisponible"],
-    },
-    {
-        "name": "Darty",
-        # ⚠️  URL indicative — vérifiez en cherchant "Midea MMCS-12HRN8" sur darty.com
-        "url": "https://www.darty.com/nav/achat/gros_electromenager/chauffage_climatisation/climatiseur/midea_mmcs-12hrn8-qrd0.html",
-        "in_stock":     ["ajouter au panier", "commander"],
-        "out_of_stock": ["rupture", "indisponible"],
-    },
-    {
-        "name": "Leroy Merlin",
-        "url": "https://www.leroymerlin.fr/produits/climatiseur-split-mobile-reversible-portasplit-midea-par-optimea-93857579.html",
-        "in_stock":     ["ajouter au panier", "en stock"],
-        "out_of_stock": ["rupture", "indisponible"],
-    },
-    {
         "name": "Amazon",
-        # ⚠️  Amazon bloque souvent les scripts — résultats variables
         "url": "https://www.amazon.fr/dp/B0CY2YW8BT/",
-        "in_stock":     ["ajouter au panier", "en stock"],
-        "out_of_stock": ["actuellement indisponible", "currently unavailable"],
+        "in_stock":     ["ajouter au panier", "add to cart"],
+        "out_of_stock": ["actuellement indisponible", "currently unavailable",
+                         "en rupture de stock"],
     },
 ]
 
@@ -91,14 +72,16 @@ STORES = [
 
 HEADERS = {
     "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/124.0.0.0 Safari/537.36"
     ),
-    "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Accept-Language": "fr-FR,fr;q=0.9",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Referer": "https://www.google.fr/",
+    "DNT": "1",
     "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -125,44 +108,31 @@ def send_telegram(message: str) -> None:
 
 
 def check_store(store: dict) -> tuple:
-    """
-    Vérifie la disponibilité d'un produit sur une boutique.
-
-    Retourne :
-      (True,  raison)  → en stock
-      (False, raison)  → rupture confirmée
-      (None,  raison)  → indéterminé (JS requis, erreur réseau, etc.)
-    """
     try:
-        resp = requests.get(
-            store["url"],
-            headers=HEADERS,
-            timeout=15,
-            allow_redirects=True,
-        )
+        session = requests.Session()
+        session.headers.update(HEADERS)
+        resp = session.get(store["url"], timeout=15, allow_redirects=True)
         resp.raise_for_status()
         html = resp.text.lower()
 
-        # D'abord chercher les indicateurs de RUPTURE (plus fiables)
+        # Détection CAPTCHA Amazon
+        if "captcha" in html or "enter the characters" in html or "robot check" in html:
+            return None, "⚠️ CAPTCHA détecté — Amazon bloque l'IP GitHub"
+
         for phrase in store["out_of_stock"]:
             if phrase.lower() in html:
                 return False, f"'{phrase}' trouvé"
 
-        # Ensuite chercher les indicateurs de STOCK
         for phrase in store["in_stock"]:
             if phrase.lower() in html:
                 return True, f"'{phrase}' trouvé"
 
-        # Aucun indicateur → probablement rendu côté JavaScript
-        return None, "statut non visible dans le HTML (JavaScript ?)"
+        return None, "statut non trouvé (page incomplète ?)"
 
-    except requests.exceptions.HTTPError as e:
-        code = e.response.status_code if e.response else "?"
-        return None, f"HTTP {code}"
     except requests.exceptions.Timeout:
         return None, "timeout"
     except requests.exceptions.RequestException as e:
-        return None, f"erreur réseau : {e}"
+        return None, f"erreur : {e}"
 
 
 def run_cycle() -> list:
