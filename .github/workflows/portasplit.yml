@@ -1,0 +1,46 @@
+# .github/workflows/portasplit.yml
+#
+# Ce fichier permet de faire tourner portasplit_monitor.py gratuitement
+# sur GitHub Actions, toutes les 10 minutes, sans serveur.
+#
+# SETUP :
+#   1. Créez un dépôt GitHub (peut être privé)
+#   2. Déposez portasplit_monitor.py à la racine
+#   3. Déposez ce fichier dans .github/workflows/portasplit.yml
+#   4. Dans Settings > Secrets and variables > Actions, ajoutez :
+#        TELEGRAM_TOKEN   → votre token bot
+#        TELEGRAM_CHAT_ID → votre chat ID
+#   5. Activez les Actions dans l'onglet "Actions" du dépôt
+#
+# NOTE : GitHub Actions peut avoir jusqu'à ~10 min de délai sur les crons
+# en période de forte charge. C'est suffisant pour ce cas d'usage.
+
+name: PortaSplit Stock Monitor
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # Toutes les 10 minutes
+  workflow_dispatch:           # Permet aussi un déclenchement manuel
+
+jobs:
+  check-stock:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Check PortaSplit stock
+        env:
+          TELEGRAM_TOKEN:   ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python portasplit_monitor.py --once
