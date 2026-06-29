@@ -171,8 +171,8 @@ def run_once() -> None:
     if available:
         lines = [f"🚨 <b>PORTASPLIT EN STOCK !</b>  [{now}]\n"]
         for s in available:
-            lines.append(f"🏪 <b>{s['name']}</b>")
-            lines.append(f"🔗 {s['url']}\n")
+          lines.append(f"🏪 <b>{s['name']}</b>")
+          lines.append(f'👉 <a href="{s["url"]}">Acheter sur {s["name"]}</a>\n')
         lines.append("⚡ <b>Dépêchez-vous, ça part vite !</b>")
         send_telegram("\n".join(lines))
     else:
