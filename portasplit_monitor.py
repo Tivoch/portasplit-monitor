@@ -219,7 +219,17 @@ def run_loop() -> None:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    if "--once" in sys.argv:
+    if "--test" in sys.argv:
+        print("📤 Envoi d'un message de test Telegram...")
+        send_telegram(
+            "🧪 <b>TEST — Moniteur PortaSplit</b>\n\n"
+            "Si vous lisez ce message, la configuration Telegram fonctionne ✅\n\n"
+            "🏪 <b>Amazon</b>\n"
+            f'👉 <a href="https://www.amazon.fr/dp/B0CY2YW8BT/">Acheter sur Amazon</a>\n\n'
+            "⚡ Dépêchez-vous, ça part vite !"
+        )
+        print("Vérifiez votre Telegram !")
+    elif "--once" in sys.argv:
         run_once()
     else:
         run_loop()
