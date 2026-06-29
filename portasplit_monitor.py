@@ -58,6 +58,18 @@ CHECK_INTERVAL   = int(os.getenv("CHECK_INTERVAL", "300"))  # secondes (300 = 5 
 
 STORES = [
     {
+        "name": "Boulanger",
+        "url": "https://www.boulanger.com/ref/1216685",
+        "in_stock":     ["ajouter au panier", "en stock"],
+        "out_of_stock": ["rupture de stock", "momentanément indisponible"],
+    },
+    {
+        "name": "Darty",
+        "url": "https://www.darty.com/nav/achat/gros_electromenager/chauffage_climatisation/climatiseur/midea_mmcs-12hrn8-qrd0.html",
+        "in_stock":     ["ajouter au panier", "commander"],
+        "out_of_stock": ["rupture", "indisponible"],
+    },
+    {
         "name": "Amazon",
         "url": "https://www.amazon.fr/dp/B0CY2YW8BT/",
         "in_stock":     ["ajouter au panier", "add to cart"],
