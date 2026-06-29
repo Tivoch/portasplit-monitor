@@ -42,4 +42,4 @@ jobs:
         env:
           TELEGRAM_TOKEN:   ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python portasplit_monitor.py --test
+        run: python portasplit_monitor.py --once
