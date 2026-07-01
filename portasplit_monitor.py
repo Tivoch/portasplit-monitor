@@ -70,8 +70,15 @@ STORES = [
         "out_of_stock": ["rupture", "indisponible"],
     },
     {
-        "name": "Amazon",
+        "name": "Amazon Midea Portasplit",
         "url": "https://www.amazon.fr/dp/B0CY2YW8BT/",
+        "in_stock":     ["ajouter au panier", "add to cart"],
+        "out_of_stock": ["actuellement indisponible", "currently unavailable",
+                         "en rupture de stock"],
+    },
+    {
+        "name": "Amazon Bosch Cool 2000",
+        "url": "https://www.amazon.fr/dp/B0BXT6XHLC/",
         "in_stock":     ["ajouter au panier", "add to cart"],
         "out_of_stock": ["actuellement indisponible", "currently unavailable",
                          "en rupture de stock"],
