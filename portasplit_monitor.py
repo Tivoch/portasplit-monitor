@@ -39,6 +39,7 @@ import sys
 import time
 import requests
 from datetime import datetime
+from bs4 import BeautifulSoup
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
@@ -136,21 +137,43 @@ def check_store(store: dict) -> tuple:
         session.headers.update(HEADERS)
         resp = session.get(store["url"], timeout=15, allow_redirects=True)
         resp.raise_for_status()
-        html = resp.text.lower()
+        html = resp.text
 
-        # Détection CAPTCHA Amazon
-        if "captcha" in html or "enter the characters" in html or "robot check" in html:
-            return None, "⚠️ CAPTCHA détecté — Amazon bloque l'IP GitHub"
+        # Détection CAPTCHA
+        if "captcha" in html.lower() or "enter the characters" in html.lower():
+            return None, "⚠️ CAPTCHA détecté"
 
+        # Amazon : cibler uniquement le buy box du produit principal
+        if "amazon.fr" in store["url"]:
+            soup = BeautifulSoup(html, "html.parser")
+
+            # Bouton "Ajouter au panier" dans le buy box uniquement
+            add_to_cart = soup.find("input", {"id": "add-to-cart-button"})
+            buy_now     = soup.find("input", {"id": "buy-now-button"})
+            if add_to_cart or buy_now:
+                return True, "bouton buy box trouvé ✓"
+
+            # Section disponibilité explicite
+            availability = soup.find("div", {"id": "availability"})
+            if availability:
+                text = availability.get_text().lower().strip()
+                if "en stock" in text:
+                    return True, f"disponibilité : '{text[:60]}'"
+                if "indisponible" in text or "rupture" in text:
+                    return False, f"disponibilité : '{text[:60]}'"
+
+            return None, "buy box non lisible (CAPTCHA ou JS ?)"
+
+        # Autres stores : logique texte classique
+        html_lower = html.lower()
         for phrase in store["out_of_stock"]:
-            if phrase.lower() in html:
+            if phrase.lower() in html_lower:
                 return False, f"'{phrase}' trouvé"
-
         for phrase in store["in_stock"]:
-            if phrase.lower() in html:
+            if phrase.lower() in html_lower:
                 return True, f"'{phrase}' trouvé"
 
-        return None, "statut non trouvé (page incomplète ?)"
+        return None, "statut non trouvé"
 
     except requests.exceptions.Timeout:
         return None, "timeout"
