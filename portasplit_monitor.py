@@ -87,8 +87,7 @@ STORES = [
         "name": "Amazon OLIMPIA SPLENDID",
         "url": "https://www.amazon.fr/dp/B083X59QZF/",
         "in_stock":     ["ajouter au panier", "add to cart"],
-        "out_of_stock": ["actuellement indisponible", "currently unavailable",
-                         "en rupture de stock"],
+        "out_of_stock": [],
     },
 ]
 
