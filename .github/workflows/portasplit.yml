@@ -18,8 +18,8 @@
 name: PortaSplit Stock Monitor
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'   # Toutes les 10 minutes
+#  schedule:
+#    - cron: '*/15 * * * *'   # Toutes les 10 minutes
   workflow_dispatch:           # Permet aussi un déclenchement manuel
 
 jobs:
