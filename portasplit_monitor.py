@@ -146,14 +146,21 @@ def check_store(store: dict) -> tuple:
         # Amazon : cibler uniquement le buy box du produit principal
         if "amazon.fr" in store["url"]:
             soup = BeautifulSoup(html, "html.parser")
-
-            # Bouton "Ajouter au panier" dans le buy box uniquement
-            add_to_cart = soup.find("input", {"id": "add-to-cart-button"})
-            buy_now     = soup.find("input", {"id": "buy-now-button"})
-            if add_to_cart or buy_now:
-                return True, "bouton buy box trouvé ✓"
-
-            # Section disponibilité explicite
+        
+            if "captcha" in html.lower() or "enter the characters" in html.lower():
+                return None, "⚠️ CAPTCHA détecté"
+        
+            # 1. Bouton achat en priorité absolue — s'il existe, c'est en stock
+            add_to_cart = (
+                soup.find("input", {"id": "add-to-cart-button"}) or
+                soup.find("input", {"name": "submit.add-to-cart"}) or
+                soup.find("input", {"id": "buy-now-button"}) or
+                soup.find("button", {"id": "buy-now-button"})
+            )
+            if add_to_cart:
+                return True, "bouton 'Ajouter au panier' trouvé ✓"
+        
+            # 2. #availability seulement si pas de bouton trouvé
             availability = soup.find("div", {"id": "availability"})
             if availability:
                 text = availability.get_text().lower().strip()
@@ -161,8 +168,9 @@ def check_store(store: dict) -> tuple:
                     return True, f"disponibilité : '{text[:60]}'"
                 if "indisponible" in text or "rupture" in text:
                     return False, f"disponibilité : '{text[:60]}'"
-
-            return None, "buy box non lisible (CAPTCHA ou JS ?)"
+        
+            # 3. Ni bouton ni #availability lisibles → indéterminé
+            return None, "statut indéterminé (page différente servie au script)"
 
         # Autres stores : logique texte classique
         html_lower = html.lower()
