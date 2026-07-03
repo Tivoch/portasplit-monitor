@@ -73,15 +73,13 @@ STORES = [
         "name": "Amazon Midea Portasplit",
         "url": "https://www.amazon.fr/dp/B0CY2YW8BT/",
         "in_stock":     ["ajouter au panier", "add to cart"],
-        "out_of_stock": ["actuellement indisponible", "currently unavailable",
-                         "en rupture de stock"],
+        "out_of_stock": [],
     },
     {
         "name": "Amazon Bosch Cool 2000",
         "url": "https://www.amazon.fr/dp/B0BXT6XHLC/",
         "in_stock":     ["ajouter au panier", "add to cart"],
-        "out_of_stock": ["actuellement indisponible", "currently unavailable",
-                         "en rupture de stock"],
+        "out_of_stock": [],
     },
     {
         "name": "Amazon OLIMPIA SPLENDID",
@@ -182,12 +180,12 @@ def run_once() -> None:
     available = run_cycle()
 
     if available:
-        lines = [f"🚨 <b>PORTASPLIT EN STOCK !</b>  [{now}]\n"]
         for s in available:
-          lines.append(f"🏪 <b>{s['name']}</b>")
-          lines.append(f'👉 <a href="{s["url"]}">Acheter sur {s["name"]}</a>\n')
-        lines.append("⚡ <b>Dépêchez-vous, ça part vite !</b>")
-        send_telegram("\n".join(lines))
+            send_telegram(
+                f"🚨 <b>{s['name']} EN STOCK !</b>  [{now}]\n\n"
+                f'👉 <a href="{s["url"]}">Acheter maintenant</a>\n\n'
+                "⚡ <b>Dépêchez-vous, ça part vite !</b>"
+            )
     else:
         print(f"  Rien en stock. Prochaine vérif dans {CHECK_INTERVAL // 60} min.\n")
 
